@@ -1,0 +1,19 @@
+fixme.py
+ui/ft_data.json
+__pycache__/
+
+#VIRTUAL ENVIROMENT
+venv/
+env/
+
+#PLIKI IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+#PLIKI LOGOW
+*.log
+*.tmp
+*.swp
+
+.env
