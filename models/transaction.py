@@ -8,5 +8,3 @@ class Transaction:
         self.date = date or datetime.datetime.now()
         self.t_id = t_id
 
-    def __str__(self):
-        return f'amount:{self.amount}\ntype:{self.t_type}\ncategory:{self.category}\ndate: {self.date}'

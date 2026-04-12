@@ -2,6 +2,7 @@ import mysql.connector
 from models.account import Account
 from models.transaction import Transaction
 from datetime import datetime
+
 class Database:
     def __init__(self, host, username, password, database):
         try:
@@ -15,9 +16,9 @@ class Database:
         except Exception as err:
             print(err)
 
-    def create_account(self, username, password, balance):
+    def create_account(self, username, str_hashed_pw, balance):
         query = "INSERT INTO account (username, password, balance) VALUES (%s, %s, %s)"
-        params = (username, password, balance)
+        params = (username, str_hashed_pw, balance)
         try:
             self.cursor.execute(query, params)
             self.db.commit()
@@ -25,21 +26,21 @@ class Database:
         except mysql.connector.errors.IntegrityError:
             return False
 
-    def update_balance(self, amount, account_id):
-        query = "UPDATE account SET balance = balance + %s WHERE account_id = %s"
-        params = (amount, account_id)
-        self.cursor.execute(query, params)
-        self.db.commit()
-
     def display_account(self, username: str | None = None, password: str | None = None, account_id: int | None = None):
         query = "SELECT * FROM account WHERE"
         params = []
+
+        if username is not None:
+            query += " username = %s"
+            params.append(username)
+
         if username is not None and password is not None:
             query += " username = %s AND password = %s"
             params.extend([username, password])
         if account_id is not None:
             query += " account_id = %s"
             params.append(account_id)
+
         self.cursor.execute(query, params)
         row = self.cursor.fetchone()
         if row is None:
@@ -64,14 +65,14 @@ class Database:
             print(f'Blad dodawania transakcji: {e}')
             return False
 
-    def display_transactions(self, account_id, filtr_option: str | None = None, order_by: str | None = None, include_id: bool = False):
+    def display_transactions(self, account_id, filtr_option: str | None = None, order_by: str | None = None):
         columns = "t_id, amount, t_type, category, date"
         query = f"SELECT {columns} FROM transactions WHERE account_id = %s"
         params = [account_id]
-        if filtr_option is not None:
+        if filtr_option is not None and filtr_option in ['income', 'expand']:
             query += " AND t_type = %s"
             params.append(filtr_option)
-        if order_by is not None:
+        if order_by is not None and order_by in ['date', 'amount']:
             query += f" ORDER BY {order_by} DESC"
 
         self.cursor.execute(query, params)
@@ -79,7 +80,7 @@ class Database:
         rows = self.cursor.fetchall()
         transactions = []
         for row in rows:
-            transaction = Transaction(row[1], row[2], row[3], row[0] if include_id else None, row[4])
+            transaction = Transaction(row[1], row[2], row[3], row[0], row[4])
             transactions.append(transaction)
         return transactions
 

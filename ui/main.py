@@ -46,8 +46,8 @@ app = FastAPI()
 @app.post('/register')
 def register(data: RegisterRequest):
     account_service = AccountService(None, storage)
-    result = account_service.new_account(data.username, data.password, data.balance)
-    if result:
+    account = account_service.new_account(data.username, data.password, data.balance)
+    if account:
         return {"status": "OK", "message": "ACCOUNT CREATED"}
     return {"status": "ERROR", "message": "USERNAME ALREADY EXISTS. TRY AGAIN"}
 
@@ -69,11 +69,16 @@ def new_transaction(data: NewTransaction, account=Depends(get_current_account)):
     return {"status": "OK", "message": "TRANSACTION ADDED"}
 
 @app.get('/transactions')
-def get_transactions(filtr_option: str | None = None, account=Depends(get_current_account)):
+def get_transactions(transaction_type: str | None = None, filtr_by: str | None = None, account=Depends(get_current_account)):
     service = AccountService(account, storage)
-    transactions = service.filtr_transactions(filtr_option, order_by='date') if filtr_option else service.get_transactions_and_id()
-    if not transactions:
-        return {'status': 'ERROR', 'message': 'TRANSACTIONS NOT FOUND'}
+    if transaction_type is not None or filtr_by is not None:
+        transactions = service.filtr_transactions(filtr_option=transaction_type, order_by=filtr_by)
+    else:
+        transactions = service.filtr_transactions()
+    if transactions is None:
+        return {'status': 'OK', 'account': account.username, 'transactions': []}
+    if transactions is False:
+        return {'status': 'ERROR', 'msg': 'WRONG FILTER/S'}
     return {"status": "OK", "account": account.username, "transactions": transactions}
 
 @app.get('/account')

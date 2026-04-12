@@ -9,13 +9,6 @@ class Account:
     def get_account_id(self):
         return self.account_id
 
-    def __str__(self):
-        return f"""=USERNAME=
-{self.username}
-=MONTH BALANCE=
-{self.balance} PLN
-"""
-
 
 
 
