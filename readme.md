@@ -123,8 +123,6 @@ To simulate real backend systems:
 ## ⚠️ Current Limitations (MVP scope)
 
 This is an MVP backend system.
-
-- Balance is not recalculated on transaction deletion
 - No pagination for large datasets
 - No refresh token mechanism yet
 

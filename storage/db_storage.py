@@ -84,13 +84,32 @@ class Database:
             transactions.append(transaction)
         return transactions
 
-    def delete_transaction(self, choice: int, account_id: int):
-        query = "DELETE FROM transactions WHERE t_id = %s AND account_id = %s"
-        params = (choice, account_id)
-        self.cursor.execute(query, params)
-        deleted = self.cursor.rowcount
-        self.db.commit()
-        return deleted
+    def delete_transaction(self, delete_id: int, account_id: int):
+        try:
+            transaction_data_query = "SELECT amount, t_type FROM transactions WHERE t_id = %s and account_id = %s FOR UPDATE"
+            transactions_data_params = (delete_id, account_id)
+            self.cursor.execute(transaction_data_query, transactions_data_params)
+
+            transaction_data = self.cursor.fetchone()
+            if not transaction_data:
+                return None
+
+            amount, t_type = transaction_data
+
+            delete_query = "DELETE FROM transactions WHERE t_id = %s and account_id = %s"
+            delete_params = (delete_id, account_id)
+            self.cursor.execute(delete_query, delete_params)
+
+            update_query = "UPDATE account SET balance = balance + %s WHERE account_id = %s"
+            update_params = (amount if t_type == 'EXPAND' else -amount, account_id)
+            self.cursor.execute(update_query, update_params)
+
+            self.db.commit()
+            return True
+
+        except Exception:
+            self.db.rollback()
+            return False
 
     def count_transactions(self, account_id):
         query = "SELECT COUNT(*) FROM transactions WHERE account_id = %s"

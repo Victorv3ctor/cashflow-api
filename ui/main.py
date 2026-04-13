@@ -41,6 +41,7 @@ def get_current_account(credentials: HTTPAuthorizationCredentials = Depends(secu
         raise HTTPException(status_code=404, detail="Account not found")
     return account
 
+
 app = FastAPI()
 
 @app.post('/register')
@@ -98,6 +99,8 @@ def show_account_status(account=Depends(get_current_account)):
 def delete_transaction(delete_id: int, account=Depends(get_current_account)):
     service = AccountService(account, storage)
     result = service.delete_transaction_by_id(delete_id)
-    if not result:
+    if result is None:
         return {'status': 'ERROR', 'message': 'TRANSACTION NOT FOUND'}
+    if result is False:
+        return {'status': 'ERROR', 'message': 'SOMETHING WENT WRONG'}
     return {'status': 'OK', 'message': 'TRANSACTION DELETED'}
