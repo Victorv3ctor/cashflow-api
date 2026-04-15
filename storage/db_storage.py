@@ -13,6 +13,7 @@ class Database:
                 database=database
             )
             self.cursor = self.db.cursor()
+            self.db.autocommit=False
         except Exception as err:
             print(err)
 
@@ -22,15 +23,18 @@ class Database:
         try:
             self.cursor.execute(query, params)
             self.db.commit()
-            return True
         except mysql.connector.errors.IntegrityError:
-            return False
+            self.db.rollback()
+            raise
+        except Exception:
+            self.db.rollback()
+            raise
 
     def display_account(self, username: str | None = None, password: str | None = None, account_id: int | None = None):
-        query = "SELECT * FROM account WHERE"
+        query = "SELECT * FROM account WHERE "
         params = []
 
-        if username is not None:
+        if username is not None and password is None:
             query += " username = %s"
             params.append(username)
 
@@ -59,20 +63,21 @@ class Database:
             update_params = (amount if t_type == 'INCOME' else -amount, account_id)
             self.cursor.execute(update_query, update_params)
             self.db.commit()
-            return True
-        except Exception as e:
+        except Exception:
             self.db.rollback()
-            print(f'Blad dodawania transakcji: {e}')
-            return False
+            raise
 
     def display_transactions(self, account_id, filtr_option: str | None = None, order_by: str | None = None):
         columns = "t_id, amount, t_type, category, date"
         query = f"SELECT {columns} FROM transactions WHERE account_id = %s"
         params = [account_id]
-        if filtr_option is not None and filtr_option in ['income', 'expand']:
+
+        if filtr_option is not None: # nie powiela logiki service, bo logika tworzenia query dla SQL
+            # service sprawdza czy nie jest None nastepniue waliduje, dopiero przekazuje
             query += " AND t_type = %s"
             params.append(filtr_option)
-        if order_by is not None and order_by in ['date', 'amount']:
+
+        if order_by is not None:
             query += f" ORDER BY {order_by} DESC"
 
         self.cursor.execute(query, params)
@@ -106,10 +111,9 @@ class Database:
 
             self.db.commit()
             return True
-
         except Exception:
             self.db.rollback()
-            return False
+            raise   #wez ten wyjatek i przekaz go dalej (czyli w tym projekcie do service)
 
     def count_transactions(self, account_id):
         query = "SELECT COUNT(*) FROM transactions WHERE account_id = %s"

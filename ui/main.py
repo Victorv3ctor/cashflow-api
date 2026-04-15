@@ -47,40 +47,42 @@ app = FastAPI()
 @app.post('/register')
 def register(data: RegisterRequest):
     account_service = AccountService(None, storage)
-    account = account_service.new_account(data.username, data.password, data.balance)
-    if account:
-        return {"status": "OK", "message": "ACCOUNT CREATED"}
-    return {"status": "ERROR", "message": "USERNAME ALREADY EXISTS. TRY AGAIN"}
+    try:
+        account_service.new_account(data.username, data.password, data.balance)
+        return {'status': 'OK', 'message': 'ACCOUNT CREATED'}
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post('/login')
 def login_in(data: LoginRequest):
     account_service = AccountService(None, storage)
-    account = account_service.get_login_in(data.username, data.password)
+    account = account_service.verify_user_credentials(data.username, data.password)
     if account:
         token = create_token(account.account_id)
         return {"access_token": token}
-    return {"status": "ERROR", "message": "WRONG USERNAME / PASSWORD. TRY AGAIN"}
+    raise HTTPException(status_code=401, detail='WRONG PASSWORD/USERNAME')
 
 @app.post('/transactions')
-def new_transaction(data: NewTransaction, account=Depends(get_current_account)):
+def add_transaction(data: NewTransaction, account=Depends(get_current_account)):
     service = AccountService(account, storage)
-    result = service.new_transaction(data.t_type, data.amount, data.category)
-    if not result:
-        return {"status": "ERROR", "message": "TRANSACTION NOT ADDED"}
-    return {"status": "OK", "message": "TRANSACTION ADDED"}
+    try:
+        service.new_transaction(data.t_type, data.amount, data.category)
+        return {"status": "OK", "message": "NEW TRANSACTION ADDED"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get('/transactions')
-def get_transactions(transaction_type: str | None = None, filtr_by: str | None = None, account=Depends(get_current_account)):
+def get_transactions(filtr_option: str | None = None, order_by: str | None = None, account=Depends(get_current_account)):
     service = AccountService(account, storage)
-    if transaction_type is not None or filtr_by is not None:
-        transactions = service.filtr_transactions(filtr_option=transaction_type, order_by=filtr_by)
-    else:
-        transactions = service.filtr_transactions()
-    if transactions is None:
-        return {'status': 'OK', 'account': account.username, 'transactions': []}
-    if transactions is False:
-        return {'status': 'ERROR', 'msg': 'WRONG FILTER/S'}
-    return {"status": "OK", "account": account.username, "transactions": transactions}
+    try:
+        transactions = service.filtr_transactions(filtr_option, order_by)
+        return {"status": "OK", "account": account.username, "transactions": transactions}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.get('/account')
 def show_account_status(account=Depends(get_current_account)):
@@ -98,9 +100,8 @@ def show_account_status(account=Depends(get_current_account)):
 @app.delete('/transactions/{delete_id}')
 def delete_transaction(delete_id: int, account=Depends(get_current_account)):
     service = AccountService(account, storage)
-    result = service.delete_transaction_by_id(delete_id)
-    if result is None:
-        return {'status': 'ERROR', 'message': 'TRANSACTION NOT FOUND'}
-    if result is False:
-        return {'status': 'ERROR', 'message': 'SOMETHING WENT WRONG'}
-    return {'status': 'OK', 'message': 'TRANSACTION DELETED'}
+    try:
+        service.delete_transaction_by_id(delete_id)
+        return {'status': 'OK', 'message': 'TRANSACTION DELETED'}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))

@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 
-
 class RegisterRequest(BaseModel):
     username: str = Field(min_length=3, description="Username must be at least 3 characters")
     password: str = Field(min_length=3, description="Password must be at least 3 characters")
