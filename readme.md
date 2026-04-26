@@ -29,15 +29,22 @@ This project focuses on **real-world backend architecture**, security, and clean
 ---
 
 ## 🏗 Architecture (backend design)
-    Client
-    ↓
-    FastAPI (API Layer)
-    ↓
-    Service Layer (Business Logic)
-    ↓
-    Storage Layer (SQL / Database)
-    ↓
-    MySQL
+- **dependencies** – shared dependencies:
+  - JWT authentication
+  - database connection
+  - repositories
+  - services
+
+- **models** – core domain models:
+  - Account (OOP)
+  - Transaction (OOP)
+  - Schemas (DTO / validation layer)
+
+- **repositories** – data access layer (DB operations)
+
+- **services** – business logic layer
+
+- **storage** – database / persistence layer
 ### Design principles:
 - Separation of concerns
 - Stateless authentication
