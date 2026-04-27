@@ -9,6 +9,7 @@ SECRET_KEY = os.getenv('JWT_SECURITY_KEY')
 ALGORITHM = os.getenv('JWT_ALGORITHM')
 
 class AuthService:
+
     @staticmethod
     def create_token(account_id: int):
         payload = {

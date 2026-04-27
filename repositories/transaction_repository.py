@@ -1,25 +1,15 @@
 from models.transaction import Transaction
 
-
 class TransactionRepository:
     def __init__(self, conn):
         self.conn = conn
 
+
     def add_transaction(self,account_id, t_type, amount, category, t_date):
         cursor = self.conn.cursor(dictionary=True)
-            #dodawanie transakcji
         cursor.execute("""
         INSERT INTO transactions(account_id, t_type, amount, category, date)
             VALUES (%s, %s, %s, %s, %s)""", (account_id, t_type, amount, category, t_date))
-
-            #wyciaganie amount
-        delta = amount if t_type.upper() == 'INCOME' else - amount
-
-            #aktualizacja konta, wszystko w jednej operacji
-        cursor.execute("""
-        UPDATE account SET balance = balance + (%s) 
-        WHERE account_id = %s""", (delta, account_id))
-
 
     def get_transactions(self, account_id, transaction_type, order_by):
         cursor = self.conn.cursor(dictionary=True)

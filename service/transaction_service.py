@@ -8,11 +8,14 @@ class TransactionService:
     def __init__(self, transaction_repo):
         self.transaction_repo = transaction_repo
 
+
     def new_transaction(self,account_id, transaction_type, amount, category):
         t_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        if transaction_type.upper() not in ['INCOME', 'EXPAND']:
+        transaction_type = transaction_type.upper()
+        if transaction_type not in ['INCOME', 'EXPAND']:
             raise ValueError
-        return self.transaction_repo.add_transaction(account_id, transaction_type, amount, category, t_date)
+        self.transaction_repo.add_transaction(account_id, transaction_type, amount, category, t_date)
+        self.transaction_repo.update_balance(amount if transaction_type =='INCOME' else -amount, account_id)
 
     def display_transactions(self, account_id, filtr_type, order_by):
         if filtr_type is not None and filtr_type.upper() not in ['INCOME', 'EXPAND']:
@@ -30,11 +33,11 @@ class TransactionService:
     def delete_transaction(self, account_id, delete_id):
         transaction = self.transaction_repo.get_tranasction_by_id(account_id, delete_id)
         if not transaction:
-            raise Exception('TRANSACTION NOT FOUND')
+            raise ValueError('TRANSACTION NOT FOUND')
         delta, t_type = transaction['amount'], transaction['t_type']
         deleted = self.transaction_repo.delete_transaction(account_id, delete_id)
         if deleted == 0:
-            raise ValueError('Delete failed')
+            raise ValueError
         self.transaction_repo.update_balance(
             delta if t_type == 'INCOME' else -delta,
             account_id

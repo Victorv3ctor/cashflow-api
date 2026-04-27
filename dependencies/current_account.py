@@ -7,16 +7,8 @@ from service.accountservice import AccountService
 from dotenv import load_dotenv
 from jose import JWTError
 import os
-
-
 load_dotenv()
-
-security = HTTPBearer() # robi całą robotę z wyciągnięciem i wstępną walidacją tokena
-#z Authorization, jesli cos jest nie tak z tokenem zwraca odrazu 401
-
-#HTTPAuthorizationCredentials ustandaryzowany sposob zwrotu wyniku (czyli opakowanie w obiekt)
-#dlatego token wyciagamy z credentials.credentials
-
+security = HTTPBearer()
 SECRET_KEY = os.getenv('JWT_SECURITY_KEY')
 ALGORITHM = os.getenv('JWT_ALGORITHM')
 

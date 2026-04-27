@@ -1,19 +1,8 @@
-# 🏦 Cashflow API (FastAPI + MySQL + JWT)
+# 🏦 Cashflow API
 
 > A backend system simulating core banking logic: authentication, transactions, and account-based financial operations.
 
 This project focuses on **real-world backend architecture**, security, and clean separation of responsibilities.
-
----
-
-## ⚡ What this project demonstrates
-
-✔ Authentication system (JWT + bcrypt)  
-✔ Secure account-based data isolation  
-✔ Transaction engine (income / expense)  
-✔ Balance mutation logic  
-✔ Filtering + analytics  
-✔ Layered backend architecture  
 
 ---
 
@@ -27,22 +16,36 @@ This project focuses on **real-world backend architecture**, security, and clean
 - Python 3.10+
 
 ---
+## 📌 API Overview
+### Endpoints
 
+- POST /register
+- POST /login
+- POST /transactions
+- GET /transactions
+- GET /account
+- DELETE /transactions/{id}
+
+---
 ## 🏗 Architecture (backend design)
 - **dependencies** – shared dependencies:
   - JWT authentication
   - database connection
-  - repositories
+  - repos
   - services
-
 - **models** – core domain models:
   - Account (OOP)
   - Transaction (OOP)
-  - Schemas (DTO / validation layer)
+  - Schemas (validation layer)
 
 - **repositories** – data access layer (DB operations)
+    - account repository
+    - transaction repository
 
 - **services** – business logic layer
+    - account service
+    - transaction service
+    - auth service
 
 - **storage** – database / persistence layer
 ### Design principles:
@@ -53,7 +56,6 @@ This project focuses on **real-world backend architecture**, security, and clean
 
 ---
 
-
 ## 🔐 Authentication Flow
 JWT-based stateless authentication is used to secure all account-scoped operations, ensuring isolation between users and protected access to transaction data.
 ### Design principles:
@@ -62,8 +64,6 @@ JWT-based stateless authentication is used to secure all account-scoped operatio
 - Expiration handling
 - Account-scoped access control
 ---
-
-
 ## 💰 Core Features
 
 ### 👤 Account System
@@ -97,18 +97,6 @@ JWT-based stateless authentication is used to secure all account-scoped operatio
 
 ---
 
-## 📌 API Overview
-### Endpoints
-
-- POST /register
-- POST /login
-- POST /transactions
-- GET /transactions
-- GET /account
-- DELETE /transactions/{id}
-
----
-
 ## 🧩 Engineering Decisions
 
 ### Why no ORM?
@@ -123,27 +111,10 @@ Direct SQL was used to:
 To simulate real backend systems:
 - API layer → request handling only
 - Service layer → business rules
-- Storage layer → persistence logic
+- Repository layer -> persistence logic
 
 ---
 
-## ⚠️ Current Limitations (MVP scope)
-
-This is an MVP backend system.
-- No pagination for large datasets
-- No refresh token mechanism yet
-
----
-
-## 🚀 Future Improvements
-
-- refresh token authentication
-- pagination system
-- Dockerized deployment
-- automated testing (pytest)
-- improved query builder / filtering engine
-
----
 ## ❓ Why this project exists ?
 Built to simulate production-grade backend patterns with authentication, transactional consistency, and layered architecture using raw SQL.
 ## 👨‍💻 Author

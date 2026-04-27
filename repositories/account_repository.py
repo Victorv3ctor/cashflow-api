@@ -1,15 +1,20 @@
 from models.account import Account
-#REPOSITORY NIE POWINNO OBSLUGIWAC COMMIT ROLLBACK BO LAMIE WTEDY MOZLIWOSC JEDNEJ
-#TRANSAKCJI OBEJMUJACEJ WIELE ZAPYTAN
+from mysql.connector import IntegrityError
+
 class AccountRepository:
     def __init__(self, conn):
         self.conn = conn
 
+
     def create_account(self, username, str_hashed_pwd, balance):
         cursor = self.conn.cursor(dictionary=True)
-        cursor.execute("""
-        INSERT INTO account(username, password, balance) VALUES
-            (%s, %s, %s)""", (username, str_hashed_pwd, balance))
+        try:
+            cursor.execute("""
+            INSERT INTO account(username, password, balance) VALUES
+                (%s, %s, %s)""", (username, str_hashed_pwd, balance))
+        except IntegrityError:
+            raise ValueError("USERNAME ALREADY EXISTS")
+
 
     def get_by_account_by_id(self, account_id):
         cursor = self.conn.cursor(dictionary=True)

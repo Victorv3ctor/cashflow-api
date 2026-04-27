@@ -4,6 +4,7 @@ class AccountService:
     def __init__(self, account_repo):
         self.account_repo = account_repo
 
+
     def create_account(self,username, password, balance):
         hash_pwd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         str_hashed_pwd = hash_pwd.decode('utf-8')
